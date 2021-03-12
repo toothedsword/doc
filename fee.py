@@ -1,6 +1,7 @@
+
 # @Author  : Liang Peng
 # @Time    : 2021年 03月 12日 星期五 17:34:12 CST
-# @Function: 生成经费预算表
+# @Function: 从文档生成经费预算表
 
 import re
 import docx2txt
@@ -79,19 +80,26 @@ if len(sys.argv) > 3 and os.path.exists(oldfile):
             pass
 # }}}
 
-# 解析文件内容
+# 解析文件内容并更新输出表格内容
 # {{{
-# 打开文件
+# 打开输出文件
 workbook = xlwt.Workbook()
+
 # 打开sheet
 worksheet = workbook.add_sheet('My sheet')
+
 # 初始化标题编号
 num = []
 for ilev in range(0, len(lev)):
     num.append(0)
 print(num)
+
+# 初始表格行号
 k = 0
+
+# 初始标题编号列表
 ns = []
+
 # 遍历所有内容
 for t in texts:
     # 遍历所有级别规则寻找所有符合条件的标题
@@ -147,15 +155,18 @@ for t in texts:
 
 # 编辑总结公式
 # {{{
+# 初始总结公式
 st = ''
+
 # 遍历所有行获取当前标题编号
 for i in range(0, k):
     si = str(i+2)
     ni = ns[i]
-    ss = ''
     if re.match(r'^\d+$', ni):
-        st = st+'L'+si+','
+        st = st+'L'+si+','  # 收集分系统系统行号
+
     # 遍历所有行寻找当前标题的下一级编号
+    ss = ''  # 初始分系统子系统公式
     for j in range(0, k):
         sj = str(j+2)
         nj = ns[j]
@@ -163,6 +174,7 @@ for i in range(0, k):
             # 如果和上级匹配，则收集行号
             ss = ss + 'L'+sj+','
     ss = re.sub(',$', '', ss)  # 去掉行末的‘,’
+
     # 如果公式参数非空，则录入
     if re.match(r'[^\s]', ss):
         ss = 'SUM('+ss+')'
@@ -173,7 +185,7 @@ for i in range(0, k):
         # 录入公式（分系统，子系统）
         worksheet.write(i+1, 11, xlwt.Formula(ss))
 
-# 录入系统公式
+# 录入总的公式(系统)
 st = re.sub(',$', '', st)
 st = 'SUM('+st+')'
 worksheet.write(0, 11, xlwt.Formula(st))
