@@ -8,6 +8,7 @@ import xlwt
 import xlrd
 import os
 import sys
+import config
 
 
 # 参数设置
